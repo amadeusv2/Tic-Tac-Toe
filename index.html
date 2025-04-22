@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css" />
+  <title>Tic Tac Toe</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+
+  <div class="menu fade-in" id="startMenu">
+    <button onclick="showModeSelect()">Start</button>
+  </div>
+
+  <div class="mode-select hidden fade-in" id="modeSelect">
+    <p>Pilih Mode:</p>
+    <button onclick="startGame(false)">Player vs Player</button>
+    <button onclick="showDifficultySelect()">Player vs AI</button>
+  </div>
+
+  <div class="mode-select hidden fade-in" id="difficultySelect">
+    <p>Pilih Tingkat Kesulitan:</p>
+    <button onclick="startGame(true, 'easy')">Mudah</button>
+    <button onclick="startGame(true, 'hard')">Sulit</button>
+  </div>
+
+  <div class="mode-select hidden fade-in" id="playerNameInput">
+    <p>Masukkan Nama Pemain:</p>
+    <input type="text" id="player1Name" placeholder="Nama Player 1 (X)">
+    <input type="text" id="player2Name" placeholder="Nama Player 2 (O)">
+    <button onclick="startPvPGame()">Mulai</button>
+  </div>
+
+  <div class="board-container hidden fade-in" id="gameArea">
+    <div class="board" id="board"></div>
+    <div class="win-line" id="winLine" style="display: none;"></div>
+    <div class="message" id="message"></div>
+    <button onclick="resetGame()">Restart</button>
+    <button onclick="goBackToModeSelect()">Back</button>
+  </div>
+
+  <button class="music-control" onclick="toggleMusic()">♫</button>
+
+  <!-- Sound Effects -->
+  <audio id="clickSound" src="SFX/mixkit-retro-arcade-casino-notification-211.wav"></audio>
+  <audio id="winSound" src="SFX/mixkit-casino-bling-achievement-2067.wav"></audio>
+  <audio id="drawSound" src="SFX/draw.wav"></audio>
+  <audio id="bgMusic" src="SFX/Roblox Fisch ost  Main theme.mp3" loop></audio>
+
+  <script>
+    const boardEl = document.getElementById('board');
+    const winLineEl = document.getElementById('winLine');
+    const messageEl = document.getElementById('message');
+    const clickSound = document.getElementById('clickSound');
+    const winSound = document.getElementById('winSound');
+    const drawSound = document.getElementById('drawSound');
+    const bgMusic = document.getElementById('bgMusic');
+
+    let board = Array(9).fill('');
+    let currentPlayer = 'X';
+    let gameActive = true;
+    let vsAI = false;
+    let aiDifficulty = 'easy';
+
+    let player1 = "Player 1";
+    let player2 = "Player 2";
+    let turnTimer;
+    const turnTime = 10;
+
+    const winPatterns = [
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [2,4,6]
+    ];
+
+    function showModeSelect() {
+      document.getElementById('startMenu').classList.add('hidden');
+      document.getElementById('modeSelect').classList.remove('hidden');
+    }
+
+    function showDifficultySelect() {
+      document.getElementById('modeSelect').classList.add('hidden');
+      document.getElementById('difficultySelect').classList.remove('hidden');
+    }
+
+    function startGame(isAI, difficulty = 'easy') {
+      vsAI = isAI;
+      aiDifficulty = difficulty;
+      document.getElementById('modeSelect').classList.add('hidden');
+
+      if (!vsAI) {
+        document.getElementById('playerNameInput').classList.remove('hidden');
+      } else {
+        document.getElementById('difficultySelect').classList.add('hidden');
+        document.getElementById('gameArea').classList.remove('hidden');
+        resetGame();
+      }
+    }
+
+    function startPvPGame() {
+      player1 = document.getElementById('player1Name').value || "Player 1";
+      player2 = document.getElementById('player2Name').value || "Player 2";
+
+      document.getElementById('playerNameInput').classList.add('hidden');
+      document.getElementById('gameArea').classList.remove('hidden');
+      resetGame();
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      board.forEach((cell, i) => {
+        const cellEl = document.createElement('div');
+        cellEl.className = 'cell';
+        cellEl.textContent = cell;
+        cellEl.addEventListener('click', () => handleMove(i));
+        boardEl.appendChild(cellEl);
+      });
+    }
+
+    function handleMove(index) {
+      if (!gameActive || board[index]) return;
+
+      clickSound.currentTime = 0;
+      clickSound.play();
+
+      board[index] = currentPlayer;
+      renderBoard();
+
+      const winner = checkWin(currentPlayer);
+      if (winner) {
+        clearInterval(turnTimer);
+        messageEl.textContent = `🎉 ${currentPlayer === 'X' ? player1 : player2} menang! 🎉`;
+        drawWinLine(winner);
+        gameActive = false;
+        winSound.play();
+      } else if (board.every(cell => cell)) {
+        clearInterval(turnTimer);
+        messageEl.textContent = "🤝 Seri!";
+        gameActive = false;
+        drawSound.play();
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        updateMessage();
+        if (vsAI && currentPlayer === 'O') {
+          setTimeout(aiMove, 500);
+        } else {
+          startTimer();
+        }
+      }
+    }
+
+    function aiMove() {
+      const empty = board.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
+      const move = aiDifficulty === 'easy'
+        ? empty[Math.floor(Math.random() * empty.length)]
+        : minimax(board, 'O').index;
+      handleMove(move);
+    }
+
+    function minimax(newBoard, player) {
+      const huPlayer = 'X';
+      const aiPlayer = 'O';
+      const availSpots = newBoard.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+
+      if (checkWin(huPlayer)) return { score: -10 };
+      if (checkWin(aiPlayer)) return { score: 10 };
+      if (availSpots.length === 0) return { score: 0 };
+
+      const moves = [];
+      for (let i = 0; i < availSpots.length; i++) {
+        const move = {};
+        move.index = availSpots[i];
+        newBoard[availSpots[i]] = player;
+        move.score = (player === aiPlayer)
+          ? minimax(newBoard, huPlayer).score
+          : minimax(newBoard, aiPlayer).score;
+        newBoard[availSpots[i]] = '';
+        moves.push(move);
+      }
+
+      let bestMove = 0;
+      let bestScore = player === aiPlayer ? -Infinity : Infinity;
+      for (let i = 0; i < moves.length; i++) {
+        if ((player === aiPlayer && moves[i].score > bestScore) ||
+            (player === huPlayer && moves[i].score < bestScore)) {
+          bestScore = moves[i].score;
+          bestMove = i;
+        }
+      }
+      return moves[bestMove];
+    }
+
+    function checkWin(player) {
+      return winPatterns.find(p => p.every(i => board[i] === player)) || null;
+    }
+
+    function drawWinLine(indices) {
+      const [a,,c] = indices;
+      const cells = boardEl.querySelectorAll('.cell');
+      const rectA = cells[a].getBoundingClientRect();
+      const rectC = cells[c].getBoundingClientRect();
+      const boardRect = boardEl.getBoundingClientRect();
+
+      const x1 = rectA.left + rectA.width / 2 - boardRect.left;
+      const y1 = rectA.top + rectA.height / 2 - boardRect.top;
+      const x2 = rectC.left + rectC.width / 2 - boardRect.left;
+      const y2 = rectC.top + rectC.height / 2 - boardRect.top;
+
+      const length = Math.hypot(x2 - x1, y2 - y1);
+      const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+      winLineEl.style.display = 'block';
+      winLineEl.style.width = `${length}px`;
+      winLineEl.style.left = `${x1}px`;
+      winLineEl.style.top = `${y1}px`;
+      winLineEl.style.transform = `rotate(${angle}deg)`;
+    }
+
+    function resetGame() {
+      board = Array(9).fill('');
+      currentPlayer = 'X';
+      gameActive = true;
+      winLineEl.style.display = 'none';
+      renderBoard();
+      updateMessage();
+      startTimer();
+    }
+
+    function startTimer() {
+      let timeLeft = turnTime;
+      updateMessage(timeLeft);
+      clearInterval(turnTimer);
+
+      turnTimer = setInterval(() => {
+        timeLeft--;
+        updateMessage(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(turnTimer);
+          messageEl.textContent = `${currentPlayer === 'X' ? player1 : player2} kehabisan waktu!`;
+          currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+          setTimeout(() => {
+            updateMessage();
+            if (vsAI && currentPlayer === 'O') aiMove();
+            else startTimer();
+          }, 1000);
+        }
+      }, 1000);
+    }
+
+    function updateMessage(secondsLeft = turnTime) {
+      if (!gameActive) return;
+      const name = currentPlayer === 'X' ? player1 : player2;
+      messageEl.textContent = `${name}'s turn (${secondsLeft}s)`;
+    }
+
+    function goBackToModeSelect() {
+      clearInterval(turnTimer);
+      board = Array(9).fill('');
+      currentPlayer = 'X';
+      gameActive = true;
+      winLineEl.style.display = 'none';
+      messageEl.textContent = '';
+      document.getElementById('gameArea').classList.add('hidden');
+      document.getElementById('modeSelect').classList.remove('hidden');
+    }
+
+    function toggleMusic() {
+      if (bgMusic.paused) bgMusic.play();
+      else bgMusic.pause();
+    }
+
+    window.addEventListener('click', () => {
+      if (bgMusic.paused) bgMusic.play().catch(() => {});
+    }, { once: true });
+  </script>
+</body>
+</html>
