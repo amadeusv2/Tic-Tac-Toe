@@ -1,0 +1,631 @@
+/* ... Tetap pakai import Google Fonts ... */
+:root {
+    --bg: #0d0d1a;
+    --board-bg: #18182b;
+    --cell-bg: #2b2b44;
+    --text: #ffffff;
+    --accent: #00e0ff;
+    --win-line: #00ff99;
+    --x-color: #ff4d6d;
+    --o-color: #4dffb8;
+    --timer-color: #ffd166;
+  }
+  
+  body {
+    margin: 0;
+    background: radial-gradient(circle at top, #1a1a2e, #0f0f1a);
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  h1 {
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent);
+    letter-spacing: 1px;
+  }
+  
+  .board-container {
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+  .board-container:hover {
+    transform: scale(1.02);
+  }
+  
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 10px;
+    background: var(--board-bg);
+    padding: 12px;
+    border-radius: 18px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+    transition: transform 0.3s ease;
+  }
+  
+  .cell {
+    width: 100px;
+    height: 100px;
+    background: var(--cell-bg);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s, transform 0.2s;
+  }
+  
+  .cell:hover {
+    background-color: #3d3d5a;
+    transform: scale(1.05);
+  }
+  
+  .cell:empty:hover::after {
+    content: attr(data-hint);
+    color: var(--accent);
+    opacity: 0.3;
+    font-size: 2rem;
+  }
+  
+  .cell:contains("X") {
+    color: var(--x-color);
+  }
+  .cell:contains("O") {
+    color: var(--o-color);
+  }
+  
+  .message {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    min-height: 1.5em;
+    color: var(--timer-color);
+    background: rgba(0,0,0,0.3);
+    padding: 10px 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 8px var(--timer-color);
+    transition: all 0.3s;
+  }
+  
+  button {
+    margin: 10px 5px 0;
+    padding: 10px 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--accent);
+    color: #000;
+    cursor: pointer;
+    box-shadow: 0 0 15px var(--accent);
+    transition: transform 0.2s, box-shadow 0.3s;
+  }
+  
+  button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 20px var(--accent);
+  }
+  
+  input[type="text"] {
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background-color: #1e1e2e;
+    color: var(--text);
+    font-size: 1rem;
+    width: 240px;
+  }
+  
+  .music-control {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background: none;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  
+  .win-line {
+    position: absolute;
+    height: 6px;
+    background-color: var(--win-line);
+    transform-origin: left center;
+    border-radius: 4px;
+    box-shadow: 0 0 12px var(--win-line);
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+  
+  @media (max-width: 500px) {
+    .board {
+      grid-template-columns: repeat(3, 80px);
+      grid-template-rows: repeat(3, 80px);
+    }
+    .cell {
+      width: 80px;
+      height: 80px;
+      font-size: 2.2rem;
+    }
+  }
+      :root {
+      --bg: #12121c;
+      --board-bg: #1f1f2f;
+      --cell-bg: #2e2e42;
+      --text: #fefefe;
+      --accent: #00e0ff;
+      --win-line: #00ff99;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 8px var(--accent);
+    }
+
+    .hidden { display: none; }
+    .fade-in {
+      animation: fadeInScale 0.5s ease forwards;
+    }
+
+    .menu, .mode-select, #gameArea {
+      opacity: 0;
+      transform: scale(0.95);
+      animation: fadeInScale 0.5s ease forwards;
+    }
+
+    .board-container {
+      position: relative;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 8px;
+      background-color: var(--board-bg);
+      padding: 8px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: var(--cell-bg);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .cell:hover {
+      background-color: #3d3d5a;
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      min-height: 1.5em;
+    }
+
+    button {
+      margin: 10px 5px 0;
+      padding: 10px 25px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--accent);
+      color: #000;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent);
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 14px var(--accent);
+    }
+
+    .win-line {
+      position: absolute;
+      height: 5px;
+      background-color: var(--win-line);
+      transform-origin: left center;
+      border-radius: 4px;
+      box-shadow: 0 0 10px var(--win-line);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .music-control {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1.2rem;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    input[type="text"] {
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      width: 220px;
+    }
+
+    @keyframes fadeInScale {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .board {
+        grid-template-columns: repeat(3, 80px);
+        grid-template-rows: repeat(3, 80px);
+      }
+      .cell {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+      }
+    }
+
+    /* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #0d0d1a;
+  --board-bg: #1e1e30;
+  --cell-bg: #2f2f4f;
+  --text: #ffffff;
+  --accent: #00e0ff;
+  --win-line: #00ff99;
+  --x-color: #ff4d6d;
+  --o-color: #4dffb8;
+  --timer-color: #ffd166;
+  --hover-glow: #55f7ff;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #1a1a2e, #0f0f1a);
+  color: var(--text);
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent);
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+h1::before {
+  content: "🎯";
+}
+h1::after {
+  content: "🕹️";
+}
+
+.board-container {
+  position: relative;
+  transition: transform 0.3s ease;
+  animation: popIn 0.6s ease-out;
+}
+.board-container:hover {
+  transform: scale(1.02);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 12px;
+  background: var(--board-bg);
+  padding: 16px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: fadeInScale 0.5s ease forwards;
+}
+
+.cell {
+  width: 100px;
+  height: 100px;
+  background: var(--cell-bg);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+}
+.cell:hover {
+  background-color: #3f3f6f;
+  box-shadow: 0 0 12px var(--hover-glow);
+  transform: scale(1.05);
+}
+
+.cell[data-hint]:empty:hover::after {
+  content: attr(data-hint);
+  color: var(--accent);
+  opacity: 0.2;
+  font-size: 2.5rem;
+  position: absolute;
+}
+
+.cell.x {
+  color: var(--x-color);
+}
+.cell.o {
+  color: var(--o-color);
+}
+
+.message {
+  margin-top: 24px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--timer-color);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 24px;
+  border-radius: 14px;
+  box-shadow: 0 0 10px var(--timer-color);
+  animation: fadeInUp 0.5s ease;
+}
+
+button {
+  margin-top: 16px;
+  padding: 12px 28px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  background-color: var(--accent);
+  color: #000;
+  cursor: pointer;
+  box-shadow: 0 0 18px var(--accent);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 24px var(--accent);
+}
+
+input[type="text"] {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid var(--accent);
+  background-color: #1e1e2e;
+  color: var(--text);
+  font-size: 1rem;
+  width: 240px;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.music-control {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 1.4rem;
+  color: var(--accent);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.music-control:hover {
+  transform: rotate(20deg) scale(1.1);
+}
+
+.win-line {
+  position: absolute;
+  height: 6px;
+  background-color: var(--win-line);
+  transform-origin: left center;
+  border-radius: 4px;
+  box-shadow: 0 0 12px var(--win-line);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 500px) {
+  .board {
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 80px);
+  }
+  .cell {
+    width: 80px;
+    height: 80px;
+    font-size: 2.3rem;
+  }
+}
+@media (max-width: 768px) {
+    h1 {
+      font-size: 2rem;
+      text-align: center;
+      padding: 0 10px;
+    }
+  
+    .board {
+      grid-template-columns: repeat(3, 80px);
+      grid-template-rows: repeat(3, 80px);
+      gap: 8px;
+      padding: 10px;
+    }
+  
+    .cell {
+      width: 80px;
+      height: 80px;
+      font-size: 2.2rem;
+    }
+  
+    .message {
+      font-size: 1rem;
+      padding: 8px 16px;
+      margin-top: 16px;
+    }
+  
+    input[type="text"] {
+      width: 200px;
+      font-size: 0.95rem;
+    }
+  
+    button {
+      padding: 10px 20px;
+      font-size: 0.95rem;
+    }
+  
+    .music-control {
+      top: 10px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      font-size: 1.1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .board {
+      grid-template-columns: repeat(3, 70px);
+      grid-template-rows: repeat(3, 70px);
+      gap: 6px;
+    }
+  
+    .cell {
+      width: 70px;
+      height: 70px;
+      font-size: 2rem;
+    }
+  
+    input[type="text"] {
+      width: 180px;
+      font-size: 0.9rem;
+    }
+  
+    button {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+  
+    h1 {
+      font-size: 1.8rem;
+    }
+  
+    .message {
+      font-size: 0.95rem;
+    }
+  }
+  .music-control {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background-color: transparent;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;                  /* Tambahkan ini */
+    align-items: center;           /* Vertikal tengah */
+    justify-content: center;       /* Horizontal tengah */
+    font-size: 1.3rem;
+    color: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent);
+    padding: 0;
+  }
+  
